@@ -123,12 +123,13 @@ $(document).ready(function () {
 <div id="use-these-libraries" class="section level2">
 <h2>Use these libraries</h2>
 <pre class="r"><code>library(knitr)
-library(R.cache)</code></pre>
-<pre><code>## Warning: package 'R.cache' was built under R version 3.4.3</code></pre>
-<pre class="r"><code>library(R.utils)</code></pre>
-<pre><code>## Warning: package 'R.utils' was built under R version 3.4.3</code></pre>
-<pre class="r"><code>library(dplyr)
+library(dplyr)
 library(ggplot2)</code></pre>
+<p>TODO: Your document should have a title that briefly summarizes your data analysis</p>
+</div>
+<div id="synopsis" class="section level2">
+<h2>Synopsis</h2>
+<p>TODO: a synopsis which describes and summarizes your analysis in at most 10 complete sentences.</p>
 </div>
 <div id="data-processing" class="section level2">
 <h2>Data Processing</h2>
@@ -137,14 +138,8 @@ library(ggplot2)</code></pre>
   download.file(&quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2&quot;, &quot;StormData.csv.bz2&quot;)
 }</code></pre>
 <p>Reading into the stormdata variable:</p>
-<pre class="r"><code>key &lt;- list(&quot;stormdata&quot;)
-stormdata &lt;- loadCache(key)
-if(is.null(stormdata)) {
-  stormdata &lt;- read.csv(&quot;StormData.csv.bz2&quot;)
-  saveCache(stormdata, key=key, comment=&quot;stormdata&quot;)
-}
-
-# show a summary of the data
+<pre class="r"><code>stormdata &lt;- read.csv(&quot;StormData.csv.bz2&quot;)</code></pre>
+<pre class="r"><code># show a summary of the data
 kable(summary(stormdata))</code></pre>
 <table>
 <thead>
@@ -632,6 +627,26 @@ kable(summary(stormdata))</code></pre>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="review-criteria" class="section level2">
+<h2>Review Criteria</h2>
+<ul>
+<li>Has either a (1) valid RPubs URL pointing to a data analysis document for this assignment been submitted; or (2) a complete PDF file presenting the data analysis been uploaded?</li>
+<li>Is the document written in English?</li>
+<li>Does the analysis include description and justification for any data transformations?</li>
+<li>Does the document have a title that briefly summarizes the data analysis?</li>
+<li>Does the document have a synopsis that describes and summarizes the data analysis in less than 10 sentences?</li>
+<li>Is there a section titled “Data Processing” that describes how the data were loaded into R and processed for analysis?</li>
+<li>Is there a section titled “Results” where the main results are presented?</li>
+<li>Is there at least one figure in the document that contains a plot?</li>
+<li>Are there at most 3 figures in this document?</li>
+<li>Does the analysis start from the raw data file (i.e. the original .csv.bz2 file)?</li>
+<li>Does the analysis address the question of which types of events are most harmful to population health?</li>
+<li>Does the analysis address the question of which types of events have the greatest economic consequences?</li>
+<li>Do all the results of the analysis (i.e. figures, tables, numerical summaries) appear to be reproducible?</li>
+<li>Do the figure(s) have descriptive captions (i.e. there is a description near the figure of what is happening in the figure)?</li>
+<li>As far as you can determine, does it appear that the work submitted for this project is the work of the student who submitted it?</li>
+</ul>
 </div>
 
 
