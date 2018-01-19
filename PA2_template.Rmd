@@ -55,12 +55,14 @@ These fields are relevant for economic consequences:
 * PROPDMG	
 * CROPDMG
 
-But what are:
+Units:
 * PROPDMGEXP	
 * CROPDMGEXP
 
+TODO: scale property damage to same units
 
-```{r}
+
+```{r populationDamageChunk}
 stormdata$EVTYPE <- as.factor(stormdata$EVTYPE)
 stormdata$POPULATION_DAMAGE <- stormdata$FATALITIES + stormdata$INJURIES
 stormdataByPopDamage <- aggregate(POPULATION_DAMAGE ~ EVTYPE, data=stormdata, FUN="sum")
@@ -71,7 +73,7 @@ qplot(stormdataByPopDamageTop10$EVTYPE, data=stormdataByPopDamageTop10, fill=sto
 ```
 
 
-```{r}
+```{r economicDamageChunk}
 stormdata$ECONOMIC_DAMAGE <- stormdata$PROPDMG + stormdata$CROPDMG
 stormdataByEcoDamage <- aggregate(ECONOMIC_DAMAGE ~ EVTYPE, data=stormdata, FUN="sum")
 stormdataByEcoDamage <- arrange(stormdataByEcoDamage, desc(ECONOMIC_DAMAGE))

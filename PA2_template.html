@@ -638,8 +638,9 @@ kable(summary(stormdata))</code></pre>
 * INJURIES</p>
 <p>These fields are relevant for economic consequences: * PROPDMG<br />
 * CROPDMG</p>
-<p>But what are: * PROPDMGEXP<br />
+<p>Units: * PROPDMGEXP<br />
 * CROPDMGEXP</p>
+<p>TODO: scale property damage to same units</p>
 <pre class="r"><code>stormdata$EVTYPE &lt;- as.factor(stormdata$EVTYPE)
 stormdata$POPULATION_DAMAGE &lt;- stormdata$FATALITIES + stormdata$INJURIES
 stormdataByPopDamage &lt;- aggregate(POPULATION_DAMAGE ~ EVTYPE, data=stormdata, FUN=&quot;sum&quot;)
