@@ -26,19 +26,10 @@ if(!file.exists("StormData.csv.bz2")) {
 }
 ```
 
-Reading into the stormdata variable:
+Reading the data into the stormdata variable:
 ```{r stormdataChunk, cache=TRUE}
 stormdata <- read.csv("StormData.csv.bz2")
 ```
-
-```{r}
-# show a summary of the data
-kable(summary(stormdata))
-```
-
-
-
-
 
 
 ## Questions
