@@ -41,14 +41,44 @@ kable(summary(stormdata))
 
 
 
+## Questions
+* Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
+* Across the United States, which types of events have the greatest economic consequences?
 
 
+These fields are relevant for harm to population:
+* FATALITIES	
+* INJURIES
 
 
+These fields are relevant for economic consequences:
+* PROPDMG	
+* CROPDMG
+
+But what are:
+* PROPDMGEXP	
+* CROPDMGEXP
 
 
+```{r}
+stormdata$EVTYPE <- as.factor(stormdata$EVTYPE)
+stormdata$POPULATION_DAMAGE <- stormdata$FATALITIES + stormdata$INJURIES
+stormdataByPopDamage <- aggregate(POPULATION_DAMAGE ~ EVTYPE, data=stormdata, FUN="sum")
+stormdataByPopDamage <- arrange(stormdataByPopDamage, desc(POPULATION_DAMAGE))
+stormdataByPopDamageTop10 <- stormdataByPopDamage[1:10,]
+qplot(stormdataByPopDamageTop10$EVTYPE, data=stormdataByPopDamageTop10, fill=stormdataByPopDamageTop10$EVTYPE,
+      geom = "bar", weight=POPULATION_DAMAGE)
+```
 
 
+```{r}
+stormdata$ECONOMIC_DAMAGE <- stormdata$PROPDMG + stormdata$CROPDMG
+stormdataByEcoDamage <- aggregate(ECONOMIC_DAMAGE ~ EVTYPE, data=stormdata, FUN="sum")
+stormdataByEcoDamage <- arrange(stormdataByEcoDamage, desc(ECONOMIC_DAMAGE))
+stormdataByEcoDamageTop10 <- stormdataByEcoDamage[1:10,]
+qplot(stormdataByEcoDamageTop10$EVTYPE, data=stormdataByEcoDamageTop10, fill=stormdataByEcoDamageTop10$EVTYPE, 
+      geom = "bar", weight=ECONOMIC_DAMAGE)
+```
 
 
 
