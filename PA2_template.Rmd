@@ -31,6 +31,22 @@ Reading the data into the stormdata variable:
 stormdata <- read.csv("StormData.csv.bz2")
 ```
 
+The events in the database start in the year 1950 and end in November 2011. In the earlier years of the database there are generally fewer events recorded, most likely due to a lack of good records. More recent years should be considered more complete. So let's find a good cut-off point.
+
+First add a year column:
+```{r addyearChunk, cache=TRUE}
+stormdata$YEAR <- as.numeric(format(as.Date(stormdata$BGN_DATE, format = "%m/%d/%Y %H:%M:%S"), "%Y"))
+```
+
+Plot the number of events per year:
+```{r}
+hist(stormdata$YEAR,main="Number of events per year",breaks = 50, xlab="Year", ylab="Total Number Of Events")
+```
+
+There's a jump from 1993 to 1994, so let's only keep the data from 1994 onwards:
+```{r}
+stormdata <- stormdata[stormdata$YEAR >= 1994,]
+```
 
 ## Questions
 * Across the United States, which types of events (as indicated in the EVTYPE variable) are most harmful with respect to population health?
@@ -38,39 +54,119 @@ stormdata <- read.csv("StormData.csv.bz2")
 
 
 These fields are relevant for harm to population:
+
 * FATALITIES	
 * INJURIES
 
 
+Add a total population damage column which is the sum of fatalities and injuries:
+```{r}
+stormdata$POPULATION_DAMAGE <- stormdata$FATALITIES + stormdata$INJURIES
+stormdataByPopDamage <- aggregate(POPULATION_DAMAGE ~ EVTYPE, data=stormdata, FUN="sum")
+```
+
+Extract the top 10 most damaging event types:
+```{r}
+stormdataByPopDamage <- arrange(stormdataByPopDamage, desc(POPULATION_DAMAGE))
+stormdataByPopDamageTop10 <- stormdataByPopDamage[1:10,]
+```
+
+Plot the total population damage by event type:
+```{r populationDamageChunk}
+qplot(stormdataByPopDamageTop10$EVTYPE, data=stormdataByPopDamageTop10, fill=stormdataByPopDamageTop10$EVTYPE, xlab="Event Type", ylab="Total Affected Population",
+      geom = "bar", weight=POPULATION_DAMAGE) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + scale_fill_discrete(guide=FALSE)
+```
+
+
+
 These fields are relevant for economic consequences:
+
 * PROPDMG	
 * CROPDMG
 
 Units:
+
 * PROPDMGEXP	
 * CROPDMGEXP
 
 TODO: scale property damage to same units
 
 
-```{r populationDamageChunk}
-stormdata$EVTYPE <- as.factor(stormdata$EVTYPE)
-stormdata$POPULATION_DAMAGE <- stormdata$FATALITIES + stormdata$INJURIES
-stormdataByPopDamage <- aggregate(POPULATION_DAMAGE ~ EVTYPE, data=stormdata, FUN="sum")
-stormdataByPopDamage <- arrange(stormdataByPopDamage, desc(POPULATION_DAMAGE))
-stormdataByPopDamageTop10 <- stormdataByPopDamage[1:10,]
-qplot(stormdataByPopDamageTop10$EVTYPE, data=stormdataByPopDamageTop10, fill=stormdataByPopDamageTop10$EVTYPE,
-      geom = "bar", weight=POPULATION_DAMAGE)
+PROPDMGEXP and CROPDMGEXP contain the units for PROPDMG and CROPDMG respectively, so let's convert the damage columns into a consistent format: millions. 
+
+Here is the range of PROPDMGEXP:
+```{r}
+levels(stormdata$PROPDMGEXP)
+```
+
+Here is the range of CROPDMGEXP:
+```{r}
+levels(stormdata$CROPDMGEXP)
 ```
 
 
-```{r economicDamageChunk}
+""  "-" "?" "+" "0" "1" "2" "3" "4" "5" "6" "7" "8" "B" "h" "H" "K"
+## [18] "m" "M"
+## [1] ""  "?" "0" "2" "B" "k" "K" "m" "M"
+
+
+From https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf
+Alphabetical characters used to signify magnitude
+include “K” for thousands, “M” for millions, and “B” for billions. Ignore case. Treat any number as an exponent (eg 3 means 1000s). Treat any other field as bad data and remove.
+
+TODO check the above!
+
+Let's make some conversion factors to millions:
+```{r}
+conversions <- c(K=0.001, k=0.001, M=1, m=1, B=1000, h = 0.0001, H=0.0001)
+
+get_multiplier <- function(unit) {
+        cf <- conversions[unit][[1]]
+        if(is.na(cf)) {
+                unitInt = as.numeric(unit)
+                if(!is.na(unitInt)) {
+                        cf <- 10^(as.numeric(unitInt)-6)
+                }
+        }
+        return(cf)
+}
+```
+
+Let's add two new columns for the normalised damage values using the conversion factors. First add multiplier columns for crop and property:
+```{r}
+stormdata$PROPDMG_MULTIPLIER <- get_multiplier(stormdata$PROPDMGEXP)
+stormdata$CROPDMG_MULTIPLIER <- get_multiplier(stormdata$CROPDMGEXP)
+```
+
+Remove any data where the multiplier is not known:
+```{r}
+stormdata <- stormdata[!is.na(stormdata$PROPDMG_MULTIPLIER),]
+stormdata <- stormdata[!is.na(stormdata$CROPDMG_MULTIPLIER),]
+```
+
+Apply the multipliers to property and crop damage:
+```{r}
+stormdata$PROP_DAMAGE <- stormdata$PROPDMG * stormdata$PROPDMG_MULTIPLIER
+stormdata$CROP_DAMAGE <- stormdata$CROPDMG * stormdata$CROPDMG_MULTIPLIER
+```
+
+Calculate total economic damage as sum of propery and crop damage:
+```{r}
 stormdata$ECONOMIC_DAMAGE <- stormdata$PROPDMG + stormdata$CROPDMG
 stormdataByEcoDamage <- aggregate(ECONOMIC_DAMAGE ~ EVTYPE, data=stormdata, FUN="sum")
+```
+
+Extract the top 10 most economically damaging event types:
+```{r}
 stormdataByEcoDamage <- arrange(stormdataByEcoDamage, desc(ECONOMIC_DAMAGE))
 stormdataByEcoDamageTop10 <- stormdataByEcoDamage[1:10,]
-qplot(stormdataByEcoDamageTop10$EVTYPE, data=stormdataByEcoDamageTop10, fill=stormdataByEcoDamageTop10$EVTYPE, 
-      geom = "bar", weight=ECONOMIC_DAMAGE)
+```
+
+Plot total economic damage by event type:
+```{r economicDamageChunk}
+qplot(stormdataByEcoDamageTop10$EVTYPE, data=stormdataByEcoDamageTop10, fill=stormdataByEcoDamageTop10$EVTYPE, xlab="Event Type", ylab="Total Economic Damage (Million USD)",
+      geom = "bar", weight=ECONOMIC_DAMAGE) + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + scale_fill_discrete(guide=FALSE)
+
 ```
 
 
